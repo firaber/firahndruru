@@ -1,0 +1,253 @@
+<?php
+// Daftar produk lengkap
+$produk = [
+    ["nama" => "ASUS", "harga" => 5000000, "img" => "https://m.media-amazon.com/images/I/61ZyQ0ohqsL._AC_SL1500_.jpg"],
+    ["nama" => "HP", "harga" => 7000000, "img" => "https://media.tatacroma.com/Croma%20Assets/Computers%20Peripherals/Laptop/Images/310954_0_wx0jbi.png"],
+    ["nama" => "LENOVO", "harga" => 15000000, "img" => "https://www.notebookcheck.com/uploads/tx_nbc2/Lenovo_IdeaPad_Slim_5_14Q8X9__1_.jpg"],
+    ["nama" => "ACER", "harga" => 2000000, "img" => "https://i5.walmartimages.com/asr/f589197a-d236-4e91-8cd0-412b88bd4183.55add538cd14e3851beb2ff368992a93.jpeg"],
+    ["nama" => "APPLE", "harga" => 30000000, "img" => "https://img.etimg.com/photo/msid-93619818/apple-laptops.jpg"]
+];
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Leptop Fira</title>
+    <style>
+        /* Desain Utama: Soft Charcoal (#36454F) & Mushroom Taupe (#918276) */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #2b2b2b; 
+            color: #f4f4f4; 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px 20px;
+            margin: 0;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 1000px; 
+            background: #36454F; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+        h2 { color: #918276; text-align: center; margin-bottom: 30px; font-size: 2em; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Tata Letak Produk Menyamping */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .item { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            padding: 15px; 
+            background: #918276; 
+            border-radius: 15px;
+            text-align: center;
+        }
+        .item img { width: 100%; height: 120px; border-radius: 10px; object-fit: cover; margin-bottom: 10px; background: white; }
+        .item-info strong { display: block; font-size: 1.1em; color: #36454F; }
+        .item-info span { color: #ffffff; font-weight: bold; }
+
+        /* Tombol & Form */
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.3s; }
+        .btn-add { background: #36454F; color: white; width: 100%; padding: 10px; margin-top: 10px; }
+        .btn-add:hover { background: #242d33; }
+        
+        .cart-section { background: #2b363d; padding: 25px; border-radius: 15px; border: 1px solid #918276; }
+        .cart-section h3 { color: #918276; margin-top: 0; }
+        .btn-checkout { background: #918276; color: white; width: 100%; padding: 15px; margin-top: 15px; font-size: 1em; }
+        .btn-print { background: #4a90e2; color: white; width: 100%; padding: 12px; margin-top: 10px; display: none; }
+        .btn-clear { background: transparent; color: #918276; width: 100%; margin-top: 10px; border: 1px solid #918276; padding: 5px; font-size: 0.8em; }
+
+        input, select { 
+            width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #918276; 
+            border-radius: 8px; background: #36454F; color: white; box-sizing: border-box;
+        }
+        #qris-box { text-align: center; display: none; margin: 15px 0; padding: 10px; background: white; border-radius: 10px; }
+        .total-text { font-size: 1.5em; color: #918276; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Toko Leptop Fira</h2>
+    
+    <div class="product-grid">
+        <?php foreach($produk as $p): ?>
+        <div class="item">
+            <img src="<?= $p['img'] ?>">
+            <div class="item-info">
+                <strong><?= $p['nama'] ?></strong>
+                <span>Rp <?= number_format($p['harga'], 0, ',', '.') ?></span>
+            </div>
+            <button class="btn-add" onclick="tambah('<?= $p['nama'] ?>', <?= $p['harga'] ?>)">Tambah</button>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="cart-section">
+        <h3>🧺 Keranjang Belanja</h3>
+        <div id="list-cart" style="font-size: 0.9em; color: #ccc;">Belum ada barang</div>
+        <hr style="border: 0.5px dashed #918276; margin: 15px 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Total:</span>
+            <strong class="total-text">Rp <span id="total-harga">0</span></strong>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <select id="metode" onchange="cekMetode()">
+                <option value="tunai">💵 Tunai</option>
+                <option value="qris">📱 QRIS</option>
+            </select>
+            <input type="number" id="bayar" placeholder="Jumlah uang...">
+        </div>
+
+        <div id="qris-box">
+            <img id="qris-img" src="" width="150">
+        </div>
+        
+        <button class="btn-checkout" onclick="proses()">KONFIRMASI BAYAR</button>
+        <button id="btn-cetak" class="btn-print" onclick="cetakStruk()">🖨️ CETAK STRUK</button>
+        <button class="btn-clear" onclick="hapusSemua()">Reset</button>
+    </div>
+</div>
+
+<script>
+let keranjang = [];
+let total = 0;
+let lastTransaction = null;
+
+function tambah(nama, harga) {
+    let item = keranjang.find(i => i.nama === nama);
+    if(item) item.qty++;
+    else keranjang.push({nama, harga, qty:1});
+    update();
+}
+
+function update() {
+    let list = document.getElementById('list-cart');
+    total = 0;
+    if(keranjang.length === 0) {
+        list.innerHTML = "Belum ada barang";
+    } else {
+        list.innerHTML = keranjang.map(i => {
+            let sub = i.harga * i.qty;
+            total += sub;
+            return `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                        <span>${i.nama} x${i.qty}</span>
+                        <span>${sub.toLocaleString()}</span>
+                    </div>`;
+        }).join('');
+    }
+    document.getElementById('total-harga').innerText = total.toLocaleString();
+    cekMetode();
+}
+
+function cekMetode() {
+    let m = document.getElementById('metode').value;
+    let box = document.getElementById('qris-box');
+    let inputTunai = document.getElementById('bayar');
+    if(m === 'qris' && total > 0) {
+        box.style.display = 'block';
+        inputTunai.style.display = 'none';
+        document.getElementById('qris-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=FIRA-PAY-${total}`;
+    } else {
+        box.style.display = 'none';
+        inputTunai.style.display = 'block';
+    }
+}
+
+function proses() {
+    if(total === 0) return alert("Pilih produk dulu!");
+    let m = document.getElementById('metode').value;
+    let uang = parseInt(document.getElementById('bayar').value) || 0;
+    if(m === 'tunai' && uang < total) return alert("Uang tidak cukup!");
+
+    lastTransaction = {
+        items: [...keranjang],
+        total: total,
+        bayar: m === 'tunai' ? uang : total,
+        kembali: m === 'tunai' ? uang - total : 0,
+        metode: m.toUpperCase(),
+        waktu: new Date().toLocaleString('id-ID')
+    };
+
+    alert("Pembayaran Berhasil!");
+    document.getElementById('btn-cetak').style.display = 'block';
+}
+
+function cetakStruk() {
+    if(!lastTransaction) return;
+
+    let itemsHtml = lastTransaction.items.map(i => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span>${i.nama} x${i.qty}</span>
+            <span>${(i.harga * i.qty).toLocaleString()}</span>
+        </div>
+    `).join('');
+
+    let strukHtml = `
+        <html>
+        <head>
+            <style>
+                body { font-family: 'Courier New', monospace; padding: 20px; color: #333; font-size: 12px; }
+                .receipt { width: 260px; margin: auto; padding: 10px; border: 1px solid #eee; }
+                .line { border-top: 1px dashed #000; margin: 10px 0; }
+                .header { text-align: center; margin-bottom: 15px; }
+                .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="receipt">
+                <div class="header">
+                    <strong>FIRA LAPTOP</strong><br>
+                    Premium Gadget Store<br>
+                    ${lastTransaction.waktu}
+                </div>
+                <div class="line"></div>
+                ${itemsHtml}
+                <div class="line"></div>
+                <div class="total-row">
+                    <span>TOTAL</span>
+                    <span>Rp ${lastTransaction.total.toLocaleString()}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                    <span>Bayar (${lastTransaction.metode})</span>
+                    <span>${lastTransaction.bayar.toLocaleString()}</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Kembali</span>
+                    <span>${lastTransaction.kembali.toLocaleString()}</span>
+                </div>
+                <div class="line"></div>
+                <center>TERIMA KASIH</center>
+            </div>
+        </body>
+        </html>
+    `;
+
+    let win = window.open('', '', 'width=400,height=500');
+    win.document.write(strukHtml);
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+    hapusSemua();
+    document.getElementById('btn-cetak').style.display = 'none';
+}
+
+function hapusSemua() {
+    keranjang = [];
+    document.getElementById('bayar').value = '';
+    update();
+}
+</script>
+
+</body>
+</html>
